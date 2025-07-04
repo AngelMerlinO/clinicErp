@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import generate from './generator.js';          // ← crea este archivo también
+import generate from './generator.js';
 
+import AuthRoutes          from './auth.routes.js';           // ← nuevo
 import UsersService        from '../services/users.service.js';
 import RolesService        from '../services/roles.service.js';
 import PermissionsService  from '../services/permissions.service.js';
@@ -10,6 +11,7 @@ import ProjectionsService  from '../services/projections.service.js';
 
 const api = Router();
 
+/* Rutas CRUD autogeneradas */
 [
   generate('/users',        UsersService),
   generate('/roles',        RolesService),
@@ -18,5 +20,8 @@ const api = Router();
   generate('/sales-orders', SalesOrdersService),
   generate('/projections',  ProjectionsService)
 ].forEach(({ path, router }) => api.use(path, router));
+
+/* Ruta de autenticación */
+api.use('/auth', AuthRoutes);
 
 export default api;
