@@ -6,5 +6,6 @@ const r = Router();
 
 /* POST /api/auth/login */
 r.post('/login', AuthCtrl.login);
+r.post('/refresh',  AuthCtrl.refresh);  
 
 export default r;

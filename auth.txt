@@ -1,0 +1,37 @@
+Flujo recomendado (Access + Refresh)
+Login inicial
+
+POST /api/auth/login → recibe { accessToken, refreshToken }
+
+Guarda accessToken (en memoria o storage) y refreshToken (idealmente en cookie HttpOnly).
+
+Peticiones normales
+
+Cada request protegida:
+
+http
+Copiar
+Editar
+Authorization: Bearer <accessToken>
+Detectar expiración
+
+Si la respuesta es 401 y el error indica “token expired”, llama a refresh:
+
+Renovar token
+
+POST /api/auth/refresh con { userId, refreshToken }
+
+Responde { accessToken: newToken, refreshToken: newRefresh }
+
+Reemplaza ambos en tu storage.
+
+Reintentar la petición original
+
+Con el nuevo accessToken, vuelve a llamar al endpoint que falló.
+
+Si falla el refresh
+
+Si /refresh devuelve 401, significa que el refreshToken también expiró o es inválido.
+
+Forzar al usuario a volver a iniciar sesión.
+

@@ -16,5 +16,19 @@ export default {
       res.status(401).json({ message: 'Invalid credentials' });
       next(err);
     }
+  },
+  
+  async refresh(req, res, next) {
+  try {
+    const { userId, refreshToken } = req.body;
+    if (!userId || !refreshToken) return res.status(400).json({ message: 'userId & refreshToken required' });
+
+    const tokens = await AuthService.refresh(userId, refreshToken);
+    res.json(tokens);
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid refresh token' });
+    next(err);
   }
+}
+
 };
