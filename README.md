@@ -32,3 +32,14 @@ CLINIC_ERP/
 ├── README.md
 └── eslint.config.js
 # clinicErp
+
+
+npm install          # instala dependencias
+npm run dev          # vite + nodemon (frontend y backend)
+npm run dev:fe       # solo vite (frontend)
+npm run dev:be       # solo nodemon (backend)
+npm run build        # build de producción (frontend)
+npm run preview      # sirve el build generado
+npm run migrate      # ejecuta las migraciones de Sequelize
+npm run seed         # ejecuta los seeders de Sequelize
+npm run lint         # eslint en todo el proyecto
