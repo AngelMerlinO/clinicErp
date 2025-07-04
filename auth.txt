@@ -1,37 +1,41 @@
-Flujo recomendado (Access + Refresh)
-Login inicial
+Tras el login inicial guardas en el cliente dos valores:
 
-POST /api/auth/login → recibe { accessToken, refreshToken }
+accessToken (vida corta, p. ej. 30 s)
 
-Guarda accessToken (en memoria o storage) y refreshToken (idealmente en cookie HttpOnly).
+refreshToken (vida larga, p. ej. 7 d)
 
-Peticiones normales
+Cada vez que haces una petición protegida añades en el header:
+Authorization: Bearer <accessToken>
 
-Cada request protegida:
+Si la API responde 401 Unauthorized por “token expired”, el cliente hace automáticamente una llamada al endpoint de refresh:
 
-http
+bash
 Copiar
 Editar
-Authorization: Bearer <accessToken>
-Detectar expiración
+POST /api/auth/refresh
+{
+  "userId": <tu id de usuario>,
+  "refreshToken": "<refreshToken almacenado>"
+}
+El servidor valida el refreshToken contra los hashes guardados, lo destruye (rotación) y emite:
 
-Si la respuesta es 401 y el error indica “token expired”, llama a refresh:
+json
+Copiar
+Editar
+{
+  "accessToken": "<nuevo accessToken>",
+  "refreshToken": "<nuevo refreshToken>"
+}
+El cliente reemplaza ambos tokens:
 
-Renovar token
+Guarda el nuevo accessToken donde antes
 
-POST /api/auth/refresh con { userId, refreshToken }
+Guarda el nuevo refreshToken (idealmente en cookie HttpOnly)
 
-Responde { accessToken: newToken, refreshToken: newRefresh }
+Vuelve a reintentar la petición original con el token renovado y, si es exitosa, continúa normalmente.
 
-Reemplaza ambos en tu storage.
+Si en POST /refresh recibe otro 401, significa que el refreshToken expiró o es inválido:
 
-Reintentar la petición original
+Borra cualquier token residual
 
-Con el nuevo accessToken, vuelve a llamar al endpoint que falló.
-
-Si falla el refresh
-
-Si /refresh devuelve 401, significa que el refreshToken también expiró o es inválido.
-
-Forzar al usuario a volver a iniciar sesión.
-
+Fuerza al usuario a volver a loguearse

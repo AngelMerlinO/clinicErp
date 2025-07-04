@@ -6,10 +6,15 @@ export default (sequelize) => {
     {
       id:        { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
       userId:    { type: DataTypes.BIGINT, field: 'user_id' },
-      tokenHash: { type: DataTypes.STRING, field: 'token_hash' },   // bcrypt hash
-      expiresAt: { type: DataTypes.DATE,  field: 'expires_at' }
+      tokenHash: { type: DataTypes.STRING, field: 'token_hash' },
+      expiresAt: { type: DataTypes.DATE, field: 'expires_at' }
     },
-    { sequelize, modelName: 'refresh_tokens', underscored: true }
+    {
+      sequelize,
+      modelName: 'refresh_tokens',
+      underscored: true,
+      timestamps: false   // ← desactiva los createdAt / updatedAt
+    }
   );
   return RefreshTokens;
 };
