@@ -1,31 +1,46 @@
 // src/layouts/AdminLayout.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   HomeIcon,
-  UsersIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
+  ShoppingCartIcon,
+  PresentationChartBarIcon,
+  UserIcon,
+  UserGroupIcon,
+  CubeIcon,
+  ClipboardDocumentListIcon,
   Bars3Icon,
   MoonIcon,
   SunIcon
 } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Pacientes', href: '/pacientes', icon: UsersIcon },
-  { name: 'Reportes', href: '/reportes', icon: ChartBarIcon },
-  { name: 'Ajustes', href: '/ajustes', icon: Cog6ToothIcon },
+const ALL_NAV_ITEMS = [
+  { name: 'Dashboard',        href: '/dashboard',      icon: HomeIcon,                   resource: 'dashboard' },
+  { name: 'Órdenes de venta', href: '/ordenes',        icon: ShoppingCartIcon,           resource: 'sales_orders' },
+  { name: 'Proyecciones',     href: '/proyecciones',   icon: PresentationChartBarIcon,   resource: 'projections' },
+  { name: 'Usuarios',         href: '/usuarios',       icon: UserGroupIcon,              resource: 'users' },
+  { name: 'Roles',            href: '/roles',          icon: UserIcon,                   resource: 'roles' },
+  { name: 'Permisos',         href: '/permisos',       icon: ClipboardDocumentListIcon,  resource: 'permissions' },
+  { name: 'Centros de costo', href: '/centros-costos', icon: CubeIcon,                   resource: 'cost_centers' },
+  { name: 'Movimientos',      href: '/movimientos',    icon: Bars3Icon,                  resource: 'logs' },
 ];
 
-const AdminLayout = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+export default function AdminLayout({ children }) {
+  const [collapsed, setCollapsed]     = useState(false);
+  const [darkMode, setDarkMode]       = useState(false);
+  const [permissions, setPermissions] = useState([]);
 
-  // Mantener dark mode en localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(stored);
-    document.documentElement.classList.toggle('dark', stored);
+    const mq = window.matchMedia('(max-width: 1023px)');
+    setCollapsed(mq.matches);
+    mq.addEventListener('change', e => setCollapsed(e.matches));
+
+    const storedDark = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(storedDark);
+    document.documentElement.classList.toggle('dark', storedDark);
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    setPermissions(user.permissions || []);
   }, []);
 
   const toggleDark = () => {
@@ -35,79 +50,123 @@ const AdminLayout = ({ children }) => {
     document.documentElement.classList.toggle('dark', next);
   };
 
+  const navItems = useMemo(() => {
+    return ALL_NAV_ITEMS.filter(item => {
+      if (item.resource === 'dashboard') return true;
+      return permissions.some(p => p.startsWith(item.resource + ':'));
+    });
+  }, [permissions]);
+
   return (
-    <div className={`flex h-screen bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200`}>
-      {/* SIDEBAR */}
-      <aside
-        className={`flex flex-col justify-between bg-white dark:bg-gray-900 shadow-lg
-          ${collapsed ? 'w-20' : 'w-64'} transition-all duration-300`}
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+      <motion.aside
+        initial={{ width: collapsed ? 64 : 256 }}
+        animate={{ width: collapsed ? 64 : 256 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        className="flex flex-col justify-between bg-white dark:bg-gray-900 shadow-lg overflow-hidden"
       >
-        {/* Logo + Collapse */}
         <div>
-          <div className="flex items-center justify-between p-4">
-            {!collapsed && (
-              <span className="text-2xl font-bold text-sky-600">
-                Clínica <span className="text-indigo-600">RX</span>
-              </span>
-            )}
-            <button
+          <motion.div
+            className="flex items-center justify-between p-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  className="text-2xl font-bold text-sky-600"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  ClinicX
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <motion.button
               onClick={() => setCollapsed(!collapsed)}
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              whileTap={{ scale: 0.9 }}
             >
               <Bars3Icon className="h-6 w-6" />
-            </button>
-          </div>
-          {/* Nav Links */}
+            </motion.button>
+          </motion.div>
           <nav className="mt-6">
-            {navItems.map(({ name, href, icon: Icon }) => (
-              <a
+            {navItems.map(({ name, href, icon: Icon }, i) => (
+              <motion.a
                 key={name}
                 href={href}
-                className={`flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition
-                  ${collapsed ? 'justify-center' : ''}`}
+                className={`flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition ${collapsed ? 'justify-center' : ''}`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * i }}
+                whileHover={{ scale: 1.02 }}
               >
                 <Icon className="h-6 w-6 text-sky-600" />
-                {!collapsed && <span className="font-medium">{name}</span>}
-              </a>
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      className="font-medium"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      {name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.a>
             ))}
           </nav>
         </div>
-
-        {/* Toggles + Footer */}
         <div className="mb-4">
-          {/* Dark Mode Toggle */}
-          <button
+          <motion.button
             onClick={toggleDark}
-            className={`flex items-center gap-2 w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition
-              ${collapsed ? 'justify-center' : ''}`}
+            className={`flex items-center gap-2 w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition ${collapsed ? 'justify-center' : ''}`}
+            whileHover={{ scale: 1.02 }}
           >
-            {darkMode ? (
-              <SunIcon className="h-6 w-6 text-indigo-500" />
-            ) : (
-              <MoonIcon className="h-6 w-6 text-indigo-500" />
+            {darkMode
+              ? <SunIcon className="h-6 w-6 text-indigo-500" />
+              : <MoonIcon className="h-6 w-6 text-indigo-500" />}
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  className="font-medium"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {darkMode ? 'Light' : 'Dark'} Mode
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.p
+                className="mt-6 px-4 text-xs text-gray-500 dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                © {new Date().getFullYear()} ClinicX
+              </motion.p>
             )}
-            {!collapsed && <span className="font-medium">Modo {darkMode ? 'Claro' : 'Oscuro'}</span>}
-          </button>
-
-          {/* Brand / Copyright */}
-          {!collapsed && (
-            <p className="mt-6 px-4 text-xs text-gray-500 dark:text-gray-400">
-              © {new Date().getFullYear()} Clínica RX
-            </p>
-          )}
+          </AnimatePresence>
         </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col overflow-auto">
-        <header className="hidden lg:flex items-center justify-between bg-white dark:bg-gray-900 shadow-sm px-6 py-4">
-          <h1 className="text-xl font-semibold">Bienvenido, Admin</h1>
-          {/* Podrías añadir aquí perfil, notificaciones, etc. */}
-        </header>
+      </motion.aside>
+      <motion.div
+        className="flex-1 flex flex-col overflow-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
         <main className="flex-1 p-6">{children}</main>
-      </div>
+      </motion.div>
     </div>
   );
-};
-
-export default AdminLayout;
+}
