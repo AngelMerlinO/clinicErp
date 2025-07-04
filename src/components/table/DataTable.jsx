@@ -1,4 +1,3 @@
-// src/components/table/DataTable.jsx
 import React from 'react';
 import {
   flexRender,
@@ -9,42 +8,55 @@ import {
 import clsx from 'clsx';
 
 /**
- * columns = [
- *   { accessorKey:'fullName', header:'Nombre' },
- *   ...
- * ]
+ * Reusable data table component with professional styling.
+ * Props:
+ * - title: string
+ * - columns: array of { accessorKey, header, cell? }
+ * - data: array of row objects
+ * - onAdd: () => void
+ * - onEdit: (row) => void
+ * - onDelete: (id) => void
+ * - deletingId?: number | null
  */
-export default function DataTable({
-  title,
-  columns,
-  data,
-  onAdd,
-  onEdit,
-  onDelete,
-}) {
+export default function DataTable({ title, columns, data, onAdd, onEdit, onDelete, deletingId }) {
   const table = useReactTable({
     data,
     columns: [
       ...columns,
       {
         id: 'actions',
-        header: () => <span className="sr-only">Acciones</span>,
-        cell: ({ row }) => (
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(row.original)}
-              className="text-indigo-600 hover:underline"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => onDelete(row.original.id)}
-              className="text-red-600 hover:underline"
-            >
-              Eliminar
-            </button>
-          </div>
-        ),
+        header: 'Acciones',
+        cell: ({ row }) => {
+          const isDeleting = deletingId === row.original.id;
+          return (
+            <div className="flex items-center justify-start gap-2">
+              <button
+                onClick={() => onEdit(row.original)}
+                className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-indigo-600 hover:text-white text-gray-600 dark:text-gray-300 rounded-lg shadow-sm transition focus:ring-2 focus:ring-indigo-400"
+                title="Editar"
+              >
+                <i className="fa-solid fa-user-pen" />
+              </button>
+              <button
+                onClick={() => onDelete(row.original.id)}
+                className={clsx(
+                  'p-2 rounded-lg shadow-sm transition focus:ring-2',
+                  isDeleting
+                    ? 'bg-red-100 dark:bg-red-800 text-red-500 animate-pulse cursor-not-allowed'
+                    : 'bg-gray-100 dark:bg-gray-700 hover:bg-red-600 hover:text-white text-gray-600 dark:text-gray-300 focus:ring-red-400'
+                )}
+                disabled={isDeleting}
+                title="Eliminar"
+              >
+                {isDeleting ? (
+                  <i className="fas fa-spinner fa-spin" />
+                ) : (
+                  <i className="fa-solid fa-trash" />
+                )}
+              </button>
+            </div>
+          );
+        },
       },
     ],
     getCoreRowModel: getCoreRowModel(),
@@ -52,47 +64,43 @@ export default function DataTable({
   });
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow rounded-xl">
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
         <button
           onClick={onAdd}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md"
+          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:ring-sky-300 dark:focus:ring-sky-800 text-white font-medium px-4 py-2 rounded-lg shadow transition"
         >
-          + Agregar
+          <i className="fa-solid fa-plus" />
+          Agregar
         </button>
       </div>
-
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
-            {table.getHeaderGroups().map(hg => (
-              <tr key={hg.id}>
-                {hg.headers.map(h => (
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
                   <th
-                    key={h.id}
-                    className={clsx(
-                      'px-6 py-3 text-left font-medium',
-                      h.column.getIsSorted() && 'text-sky-600'
-                    )}
-                    onClick={h.column.getToggleSortingHandler()}
+                    key={header.id}
+                    className="px-6 py-3 text-left font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider select-none cursor-pointer"
+                    onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(h.column.columnDef.header, h.getContext())}
-                    {{
-                      asc: ' ▲',
-                      desc: ' ▼',
-                    }[h.column.getIsSorted()] ?? ''}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {{ asc: ' ▲', desc: ' ▼' }[header.column.getIsSorted()] ?? ''}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
+              <tr
+                key={row.id}
+                className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id} className="px-6 py-3">
+                  <td key={cell.id} className="px-6 py-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -100,7 +108,7 @@ export default function DataTable({
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={columns.length + 1} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={columns.length + 1} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   Sin registros
                 </td>
               </tr>
