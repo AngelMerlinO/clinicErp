@@ -1,15 +1,20 @@
 // src/routes/ProtectedRoutes.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
-import DashboardHomePage from '../features/dashboard/pages/DashboardHomePage';
-import PatientsListPage from '../features/patients/pages/PatientsListPage';
 import AdminLayout from '../layouts/AdminLayout';
 
-export const ProtectedRoutes = () => (
-  <AdminLayout>
-    <Routes>
-      <Route path="/" element={<DashboardHomePage />} />
-      <Route path="/patients" element={<PatientsListPage />} />
-      <Route path="/*" element={<Navigate to="/" />} />
-    </Routes>
-  </AdminLayout>
-);
+import DashboardHomePage from '../features/dashboard/pages/DashboardHomePage';
+import UsersPage from '../features/users/pages/UsersPage';
+// import more pages...
+
+export default function ProtectedRoutes() {
+  return (
+    <AdminLayout>
+      <Routes>
+        <Route index element={<DashboardHomePage />} />
+        <Route path="usuarios" element={<UsersPage />} />
+        {/* Add other routes like ordenes, proyecciones, etc. */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </AdminLayout>
+  );
+}

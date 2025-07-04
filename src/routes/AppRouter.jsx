@@ -1,34 +1,21 @@
 // src/routes/AppRouter.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../features/auth/pages/LoginPage';
-import DashboardHomePage from '../features/dashboard/pages/DashboardHomePage';
-import AdminLayout from '../layouts/AdminLayout';
+import ProtectedRoutes from './ProtectedRoutes';
 
 const isAuthenticated = !!localStorage.getItem('token');
 
-export const AppRouter = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {!isAuthenticated ? (
-          <>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </>
-        ) : (
-          <>
-            <Route
-              path="/"
-              element={
-                <AdminLayout>
-                  <DashboardHomePage />
-                </AdminLayout>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
-      </Routes>
-    </BrowserRouter>
-  );
-};
+export const AppRouter = () => (
+  <BrowserRouter>
+    <Routes>
+      {isAuthenticated ? (
+        <Route path="/*" element={<ProtectedRoutes />} />
+      ) : (
+        <>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </>
+      )}
+    </Routes>
+  </BrowserRouter>
+);
