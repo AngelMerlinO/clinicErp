@@ -14,11 +14,12 @@ import clsx from 'clsx';
  * - columns: array of { accessorKey, header, cell? }
  * - data: array of row objects
  * - onAdd: () => void
+ * - onView: (row) => void
  * - onEdit: (row) => void
  * - onDelete: (id) => void
  * - deletingId?: number | null
  */
-export default function DataTable({ title, columns, data, onAdd, onEdit, onDelete, deletingId }) {
+export default function DataTable({ title, columns, data, onAdd, onView, onEdit, onDelete, deletingId }) {
   const table = useReactTable({
     data,
     columns: [
@@ -30,6 +31,13 @@ export default function DataTable({ title, columns, data, onAdd, onEdit, onDelet
           const isDeleting = deletingId === row.original.id;
           return (
             <div className="flex items-center justify-start gap-2">
+              <button
+                onClick={() => onView?.(row.original)}
+                className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-sky-600 hover:text-white text-gray-600 dark:text-gray-300 rounded-lg shadow-sm transition focus:ring-2 focus:ring-sky-400"
+                title="Ver"
+              >
+                <i className="fa-solid fa-eye" />
+              </button>
               <button
                 onClick={() => onEdit(row.original)}
                 className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-indigo-600 hover:text-white text-gray-600 dark:text-gray-300 rounded-lg shadow-sm transition focus:ring-2 focus:ring-indigo-400"
