@@ -20,7 +20,6 @@ const ALL_NAV_ITEMS = [
   { name: 'Proyecciones',     href: '/proyecciones',   icon: PresentationChartBarIcon,   resource: 'projections' },
   { name: 'Usuarios',         href: '/usuarios',       icon: UserGroupIcon,              resource: 'users' },
   { name: 'Roles',            href: '/roles',          icon: UserIcon,                   resource: 'roles' },
-  { name: 'Permisos',         href: '/permisos',       icon: ClipboardDocumentListIcon,  resource: 'permissions' },
   { name: 'Centros de costo', href: '/centros-costos', icon: CubeIcon,                   resource: 'cost_centers' },
   { name: 'Movimientos',      href: '/movimientos',    icon: Bars3Icon,                  resource: 'logs' },
 ];
